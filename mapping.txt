@@ -1,4 +1,23 @@
-// MARIAM + GANNA
-
-dir=ls 
-
+dir=ls  
+copy=cp  
+del=rm  
+rename=mv  
+move=mv  
+md=mkdir  
+rd=rmdir  
+type=cat  
+more=more  
+cls=clear  
+cd=cd  
+attrib=chmod  
+xcopy=cp  
+edit=nano  
+chkdsk=fsck  
+format=mkfs  
+tree=tree  
+ipconfig=ifconfig  
+ping=ping  
+netstat=netstat  
+tasklist=ps  
+taskkill=kill  
+exit=exit  

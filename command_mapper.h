@@ -12,7 +12,7 @@ const char *translate_command(const char *dos_command);
 // Executes the given Linux command using system()
 void execute_command(const char *linux_command);
 
-
+void display_commands();
 /*          RAMADAN + SAMA          */     
 
 // Displays the interactive DOS-shell-style menu
