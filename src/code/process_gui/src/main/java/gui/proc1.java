@@ -1,10 +1,14 @@
 
 package gui;
 
+import gui.priorityNonPreemptive.PriorityNonPreemptive;
+import gui.priorityNonPreemptive.ProcessManager;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -12,18 +16,14 @@ import javax.swing.SwingConstants;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 public class proc1 extends javax.swing.JFrame {
-
+    
+    
     public proc1() {
         initComponents();
         
         setResizable(false);   
-        
-        DefaultTableModel model = (DefaultTableModel) table1.getModel();
-        GanttChartPanel chartPanel = new GanttChartPanel();
-//        ganttPanel.setLayout(new java.awt.BorderLayout()); // Ensure layout fills it
-//        ganttPanel.add(chartPanel, java.awt.BorderLayout.CENTER);
-//        ganttPanel.revalidate();
-//        ganttPanel.repaint();
+       
+
           ganttPanel.setBackground(Color.decode("#f4f6f8"));
         //table colors
         jPanel2.setBackground(Color.decode("#f4f6f8"));
@@ -63,18 +63,14 @@ public class proc1 extends javax.swing.JFrame {
         table1.setForeground(new java.awt.Color(40, 100, 163));
         table1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+
             },
             new String [] {
-                "ID", "Arrival", "Burst", "Priority", "WT", "TAT", "RT"
+                "ID", "Priority", "Burst", "WT", "TAT", "RT"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                true, true, true, true, false, false, false
+                true, true, true, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -92,7 +88,6 @@ public class proc1 extends javax.swing.JFrame {
             table1.getColumnModel().getColumn(3).setResizable(false);
             table1.getColumnModel().getColumn(4).setResizable(false);
             table1.getColumnModel().getColumn(5).setResizable(false);
-            table1.getColumnModel().getColumn(6).setResizable(false);
         }
 
         setRowsButton.setBackground(new java.awt.Color(100, 181, 163));
@@ -222,10 +217,9 @@ public class proc1 extends javax.swing.JFrame {
             if (count <= 0) throw new NumberFormatException();
 
             DefaultTableModel model = (DefaultTableModel) table1.getModel();
-            int oldRowCount = model.getRowCount();
-            int newRowsToAdd = Integer.parseInt(processCountField.getText());
+
             for (int i = 1; i <= count; i++) {
-                model.addRow(new Object[] { "P" +(oldRowCount + i), " ", " ", " " });  // ID, arrival, burst, priority
+            model.addRow(new Object[] { "P" + i, " ", " ", " " });  
                 
             }
         } catch (NumberFormatException ex) {
@@ -239,59 +233,42 @@ public class proc1 extends javax.swing.JFrame {
 
     private void computeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_computeButtonActionPerformed
         DefaultTableModel model = (DefaultTableModel) table1.getModel();
-//        int rowCount = model.getRowCount();
-//        ArrayList<Processes> processes = new ArrayList<>();
-//
-//        try {
-//            for (int i = 0; i < rowCount; i++) {
-//                String id = model.getValueAt(i, 0).toString();
-//                int arrival = Integer.parseInt(model.getValueAt(i, 1).toString());
-//                int burst = Integer.parseInt(model.getValueAt(i, 2).toString());
-//                int priority = Integer.parseInt(model.getValueAt(i, 3).toString());
-//
-//                if (arrival < 0 || burst <= 0 || priority < 0) {
-//                    throw new NumberFormatException();
-//                }
-//                
-//                Processes p = new Processes() {};
-//                p.id = id;
-//                p.arrival = arrival;
-//                p.burst = burst;
-//                p.priority = priority;
-//                processes.add(p);
-//            }
-//        } catch (Exception e) {
-//            JOptionPane.showMessageDialog(this, "Invalid input. Please enter valid non-negative integers.");
-//            return;
-//        }
-//        
+        priorityNonPreemptive.ProcessManager manager = new priorityNonPreemptive.ProcessManager();
+        int rowCount = Integer.parseInt(processCountField.getText());
+        for (int i = 0; i < rowCount; i++) {
+            
+            String id = model.getValueAt(i, 0).toString().trim();
+            int priority = Integer.parseInt(model.getValueAt(i, 1).toString().trim());
+            int burst = Integer.parseInt(model.getValueAt(i, 2).toString().trim());
+            priorityNonPreemptive.ProcessManager.Process p = new priorityNonPreemptive.ProcessManager.Process(id, burst, priority);
+            manager.getProcesses().add(p);
+        }
         
-        List<GanttChartPanel.Task> tasks = Arrays.asList(
-        new GanttChartPanel.Task("P1", 0, 3),
-        new GanttChartPanel.Task("P2", 3, 5),
-        new GanttChartPanel.Task("P3", 8, 2),
-        new GanttChartPanel.Task("P4", 9, 1)
-
-    );
-
-    // Create the Gantt chart panel
-    GanttChartPanel chartPanel = new GanttChartPanel();
-    chartPanel.setTasks(tasks);  // Set the tasks to the chart panel
-
-    // Clear any old chart before adding a new one
-    ganttPanel.removeAll();
-
-    // Add the new chart panel to your ganttPanel
-    ganttPanel.setLayout(new java.awt.BorderLayout()); // Ensure it fills the panel
-    ganttPanel.add(chartPanel, java.awt.BorderLayout.CENTER);
-
-    // Refresh the UI (revalidate and repaint)
-    ganttPanel.revalidate();
-    ganttPanel.repaint();
+        
+         manager.scheduleProcesses();
+         
+        for ( int i = 0; i < rowCount; i++) {
+           priorityNonPreemptive.ProcessManager.Process p = manager.getProcesses().get(i);
+           model.setValueAt(p.waitingTime, i, 3);     // Waiting Time (WT)
+           model.setValueAt(p.turnaroundTime, i, 4);  // Turnaround Time (TAT)
+           model.setValueAt(p.responseTime, i, 5);    // Response Time (RT)
+        }
+    new GanttWindow(manager.getProcesses());
+        
     }//GEN-LAST:event_computeButtonActionPerformed
 
     private void setRowsButtonKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_setRowsButtonKeyPressed
+         try {
+            int count = Integer.parseInt(processCountField.getText());
+            if (count <= 0) throw new NumberFormatException();
 
+            DefaultTableModel model = (DefaultTableModel) table1.getModel();
+            for (int i = 1; i <= count; i++) {
+                model.addRow(new Object[]{"P"  + i, " ", " ", " "}); 
+            }
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "Enter a valid positive integer.");
+        }
     }//GEN-LAST:event_setRowsButtonKeyPressed
 
  
